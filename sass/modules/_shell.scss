@@ -81,6 +81,12 @@
   height: 15px;
   background: red;
   z-index: 1;
+  cursor:  pointer;
+  border-radius: 5px 0 0 0;
+
+  &:hover {
+    background: #a00;
+  }
 }
 
 .app-shell-modal {

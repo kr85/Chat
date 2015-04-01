@@ -19,8 +19,8 @@ gulp.task('scripts', function () {
   gulp.src([
     'js/lib/jquery-1.11.2.js',
     'js/lib/jquery.uriAnchor.js',
-    'js/chat.js',
-    'js/chat.shell.js'
+    'js/app.js',
+    'js/app.shell.js'
   ])
     .pipe(concat('all.js'))
     .pipe(uglify())
