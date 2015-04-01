@@ -5,12 +5,6 @@
  white  : true
  */
 /*global $, app */
-var app = (function () {
-  var initModule = function ($container) {
-    app.shell.initModule($container);
-  };
-
-  return {
-    initModule : initModule
-  };
+app.model = (function () {
+  return {};
 }());
