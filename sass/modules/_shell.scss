@@ -1,0 +1,96 @@
+.app-shell-header, .app-shell-header-logo, .app-shell-header-account,
+.app-shell-header-search, .app-shell-main, .app-shell-main-nav,
+.app-shell-main-content, .app-shell-footer, .app-shell-chat,
+.app-shell-modal {
+  position: absolute;
+}
+
+.app-shell-header {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+}
+
+.app-shell-header-logo {
+  top: 4px;
+  left: 4px;
+  height: 32px;
+  width: 128px;
+  background: orange;
+}
+
+.app-shell-header-account {
+  top: 4px;
+  right: 0;
+  width: 64px;
+  height: 32px;
+  background: #008000;
+}
+
+.app-shell-header-search {
+  top: 4px;
+  right: 64px;
+  width: 248px;
+  height: 32px;
+  background: #0000ff;
+}
+
+.app-shell-main {
+  top: 40px;
+  left: 0;
+  bottom: 40px;
+  right: 0;
+}
+
+.app-shell-main-content, .app-shell-main-nav {
+  top: 0;
+  bottom: 0;
+}
+
+.app-shell-main-nav {
+  width: 250px;
+  background: #eeeeee;
+}
+
+.app-x-closed .app-shell-main-nav {
+  width: 0;
+}
+
+.app-shell-main-content {
+  left: 250px;
+  right: 0;
+  background: #dddddd;
+}
+
+.app-x-closed .app-shell-main-content {
+  left: 0;
+}
+
+.app-shell-footer {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+}
+
+.app-shell-chat {
+  bottom: 0;
+  right: 0;
+  width: 300px;
+  height: 15px;
+  background: red;
+  z-index: 1;
+}
+
+.app-shell-modal {
+  margin-top: -200px;
+  margin-left: -200px;
+  top: 50%;
+  left: 50%;
+  width: 400px;
+  height: 400px;
+  background: #ffffff;
+  border-radius: 3px;
+  z-index: 2;
+}

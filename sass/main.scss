@@ -1,1 +1,46 @@
+@import "modules/app";
 @import "modules/shell";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+  margin-bottom: 10px;
+}
+
+ol, ul, dl {
+  list-style-position: inside;
+}
+
+body {
+  font: 13px 'Trebuchet MS', Verdana, Helvetica, Arial, sans-serif;
+  color: #444444;
+  background-color: #888888;
+}
+
+a {
+  text-decoration: none;
+
+  &:link, &:visited {
+    color: inherit;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+strong {
+  font-weight: 800;
+  color: #000000;
+}
+
+.clearfix {
+  height: 0 !important;
+  float: none !important;
+  visibility: hidden !important;
+  clear: both !important;
+}
