@@ -13,18 +13,33 @@
 
 .app-shell-header-logo {
   top: 4px;
-  left: 4px;
+  left: 8px;
   height: 32px;
   width: 128px;
-  background: orange;
+
+  h1 {
+    font : 800 22px/22px Arial, Helvetica, sans-serif;
+    margin : 0;
+  }
+
+  p {
+    font : 800 10px/10px Arial, Helvetica, sans-serif;
+    margin: 0;
+  }
 }
 
 .app-shell-header-account {
   top: 4px;
   right: 0;
-  width: 64px;
+  width: 210px;
   height: 32px;
-  background: #008000;
+  line-height: 32px;
+  background: #888;
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .app-shell-header-search {
@@ -48,8 +63,9 @@
 }
 
 .app-shell-main-nav {
-  width: 250px;
+  width: 400px;
   background: #eeeeee;
+  z-index: 1;
 }
 
 .app-x-closed .app-shell-main-nav {
@@ -57,7 +73,7 @@
 }
 
 .app-shell-main-content {
-  left: 250px;
+  left: 400px;
   right: 0;
   background: #dddddd;
 }

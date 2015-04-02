@@ -6,6 +6,8 @@
  */
 /*global $, app */
 app.shell = (function () {
+  'use strict';
+
   var configMap = {
         anchor_schema_map : {
           chat : {
@@ -15,7 +17,10 @@ app.shell = (function () {
         },
         main_html : String()
           + '<div class="app-shell-header">'
-            + '<div class="app-shell-header-logo"></div>'
+            + '<div class="app-shell-header-logo">'
+              + '<h1>CHAT-APP</h1>'
+              + '<p>Lorem lorem lorem</p>'
+            + '</div>'
             + '<div class="app-shell-header-account"></div>'
             + '<div class="app-shell-header-search"></div>'
           + '</div>'
@@ -40,7 +45,7 @@ app.shell = (function () {
       },
       jQueryMap = {},
       copyAnchorMap, setjQueryMap, changeAnchorPart, onHashChange, onResize,
-      setChatAnchor, onClickChat, initModule;
+      onTapAccount, onLogin, onLogout, setChatAnchor, initModule;
 
   copyAnchorMap = function () {
     return $.extend(
@@ -53,7 +58,9 @@ app.shell = (function () {
   setjQueryMap = function () {
     var $container = stateMap.$container;
     jQueryMap = {
-      $container : $container
+      $container : $container,
+      $account   : $container.find('.app-shell-header-account'),
+      $nav       : $container.find('.app-shell-main-nav')
     };
   };
 
@@ -149,15 +156,30 @@ app.shell = (function () {
     return true;
   };
 
-  setChatAnchor = function (position_type) {
-    return changeAnchorPart({ chat : position_type });
+  onTapAccount = function () {
+    var account_text, user_name, user = app.model.people.get_user();
+
+    if (user.get_is_anonymous()) {
+      user_name = prompt('Please Sign-In');
+      app.model.people.login(user_name);
+      jQueryMap.$account.text('Processing...');
+    } else {
+      app.model.people.logout();
+    }
+
+    return false;
   };
 
-  onClickChat = function () {
-    changeAnchorPart({
-      chat : (stateMap.is_chat_retracted) ? 'open' : 'closed'
-    });
-    return false;
+  onLogin = function (event, login_user) {
+    jQueryMap.$account.text(login_user.name);
+  };
+
+  onLogout = function (event, logout_user) {
+    jQueryMap.$account.text('Please Sign-In');
+  };
+
+  setChatAnchor = function (position_type) {
+    return changeAnchorPart({ chat : position_type });
   };
 
   initModule = function ($container) {
@@ -181,6 +203,13 @@ app.shell = (function () {
       .bind('resize', onResize)
       .bind('hashchange', onHashChange)
       .trigger('hashchange');
+
+    $.gevent.subscribe($container, 'app-login', onLogin);
+    $.gevent.subscribe($container, 'app-logout', onLogout);
+
+    jQueryMap.$account
+      .text('Please Sign-In')
+      .bind('utap', onTapAccount);
   };
 
   return {

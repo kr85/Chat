@@ -17,13 +17,20 @@ gulp.task('css', function () {
 
 gulp.task('scripts', function () {
   gulp.src([
+    'js/lib/taffy.js',
     'js/lib/jquery-1.11.2.js',
     'js/lib/jquery.uriAnchor.js',
+    'js/lib/jquery.event.gevent.js',
+    'js/lib/jquery.event.ue.js',
     'js/app.js',
     'js/app.util.js',
+    'js/app.data.js',
+    'js/app.fake.js',
     'js/app.model.js',
+    'js/app.util_browser.js',
     'js/app.shell.js',
-    'js/app.chat.js'
+    'js/app.chat.js',
+    'js/app.avatar.js'
   ])
     .pipe(concat('all.js'))
     .pipe(uglify())
