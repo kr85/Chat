@@ -13875,7 +13875,7 @@ app.data = (function () { return {}; }());
 app.fake = (function () {
   'use strict';
 
-  var getPeopleList, fakeIdSerial, makeFakeId, mockSocketIo;
+  var peopleList, fakeIdSerial, makeFakeId, mockSocketIo;
 
   fakeIdSerial = 5;
 
@@ -13883,8 +13883,7 @@ app.fake = (function () {
     return 'id_' + String(fakeIdSerial++);
   };
 
-  getPeopleList = function () {
-    return [
+  peopleList = [
       {
         name : 'Bety',
         _id  : 'id_01',
@@ -13921,27 +13920,96 @@ app.fake = (function () {
           'background-color' : 'rgb(192, 128, 128)'
         }
       }
-    ];
-  };
+  ];
 
   mockSocketIo = (function () {
-    var on_sio, emit_sio, callback_map = {};
+    var on_sio, emit_sio, emit_mock_msg, send_listchange, listchange_idto,
+        callback_map = {};
 
     on_sio = function (msg_type, callback) {
       callback_map[msg_type] = callback;
     };
 
     emit_sio = function (msg_type, data) {
+      var person_map, i;
+
       if (msg_type === 'adduser' && callback_map.userupdate) {
         setTimeout(function () {
-          callback_map.userupdate([{
+          person_map = {
             _id     : data.cid,
             name    : data.name,
             css_map : data.css_map
-          }]);
+          };
+          peopleList.push(person_map);
+          callback_map.userupdate([person_map]);
         }, 3000);
       }
+
+      if (msg_type === 'updatechat' && callback_map.updatechat) {
+        setTimeout(function () {
+          var user = app.model.people.get_user();
+          callback_map.updatechat([{
+            dest_id : user.id,
+            dest_name : user.name,
+            sender_id : data.dest_id,
+            msg_text : 'How\'s it going, ' + user.name + '?'
+          }]);
+        }, 2000);
+      }
+
+      if (msg_type === 'leavechat') {
+        delete callback_map.listchange;
+        delete callback_map.updatechat;
+
+        if (listchange_idto) {
+          clearTimeout(listchange_idto);
+          listchange_idto = undefined;
+        }
+
+        send_listchange();
+      }
+
+      if (msg_type === 'updateavatar' && callback_map.listchange) {
+        for (i = 0; i < peopleList.length; i++) {
+          if (peopleList[i]._id === data.person_id) {
+            peopleList[i].css_map = data.css_map;
+            break;
+          }
+        }
+
+        callback_map.listchange([peopleList]);
+      }
     };
+
+    emit_mock_msg = function () {
+      setTimeout(function () {
+        var user = app.model.people.get_user();
+        if (callback_map.updatechat) {
+          callback_map.updatechat([{
+            dest_id   : user.id,
+            dest_name : user.name,
+            sender_id : 'id_04',
+            msg_text  : 'Hi there ' + user.name + '! Wilma here.'
+          }]);
+        } else {
+          emit_mock_msg();
+        }
+      }, 8000);
+    };
+
+    send_listchange = function () {
+      listchange_idto = setTimeout(function () {
+        if (callback_map.listchange) {
+          callback_map.listchange([peopleList]);
+          emit_mock_msg();
+          listchange_idto = undefined;
+        } else {
+          send_listchange();
+        }
+      }, 1000);
+    };
+
+    send_listchange();
 
     return {
       emit : emit_sio,
@@ -13950,7 +14018,6 @@ app.fake = (function () {
   }());
 
   return {
-    getPeopleList : getPeopleList,
     mockSocketIo  : mockSocketIo
   };
 }());
@@ -13972,11 +14039,12 @@ app.model = (function () {
         cid_serial     : 0,
         people_cid_map : {},
         people_db      : TAFFY(),
-        user           : null
+        user           : null,
+        is_connected   : false
       },
       isFakeData = true,
       personProto, makeCid, clearPeopleDb, completeLogin,
-      makePerson, removePerson, people, initModule;
+      makePerson, removePerson, people, chat, initModule;
 
   personProto = {
     get_is_user : function () {
@@ -14009,7 +14077,7 @@ app.model = (function () {
     stateMap.user.id                      = user_map._id;
     stateMap.user.css_map                 = user_map.css_map;
     stateMap.people_cid_map[user_map._id] = stateMap.user;
-
+    chat.join();
     $.gevent.publish('app-login', [stateMap.user]);
   };
 
@@ -14091,14 +14159,13 @@ app.model = (function () {
     };
 
     logout = function () {
-      var is_removed,
-          user = stateMap.user;
+      var user = stateMap.user;
 
-      is_removed    = removePerson(user);
+      chat._leave();
       stateMap.user = stateMap.anonymous_user;
+      clearPeopleDb();
 
       $.gevent.publish('app-logout', [user]);
-      return is_removed;
     };
 
     return {
@@ -14110,8 +14177,165 @@ app.model = (function () {
     };
   }());
 
+  chat = (function () {
+    var _publish_listchange, _publish_updatechat, _update_list, _leave_chat,
+        get_chatee, join_chat, send_msg, set_chatee, update_avatar,
+        chatee = null;
+
+    _update_list = function (arg_list) {
+      var i, person_map, make_person_map, person,
+          people_list      = arg_list[0],
+          is_chatee_online = false;
+
+      clearPeopleDb();
+
+      for (i = 0; i < people_list.length; i++) {
+        person_map = people_list[i];
+
+        if (!person_map.name) {
+          continue;
+        }
+
+        if (stateMap.user && stateMap.user.id === person_map._id) {
+          stateMap.user.css_map = person_map.css_map;
+          continue;
+        }
+
+        make_person_map = {
+          cid     : person_map._id,
+          css_map : person_map.css_map,
+          id      : person_map._id,
+          name    : person_map.name
+        };
+
+        person = makePerson(make_person_map);
+
+        if (chatee && chatee.id == make_person_map.id) {
+          is_chatee_online = true;
+          chatee = person;
+        }
+      }
+
+      stateMap.people_db.sort('name');
+
+      if (chatee && !is_chatee_online) {
+        set_chatee('');
+      }
+    };
+
+    _publish_listchange = function (arg_list) {
+      _update_list(arg_list);
+      $.gevent.publish('app-listchange', [arg_list]);
+    };
+
+    _publish_updatechat = function (arg_list) {
+      var msg_map = arg_list[0];
+
+      if (!chatee) {
+        set_chatee(msg_map.sender_id);
+      } else if (msg_map.sender_id !== stateMap.user.id &&
+                 msg_map.sender_id !== chatee.id) {
+        set_chatee(msg_map.sender_id);
+      }
+
+      $.gevent.publish('app-updatechat', [msg_map]);
+    };
+
+    _leave_chat = function () {
+      var sio = (isFakeData) ? app.fake.mockSocketIo : app.data.getSocketIo();
+      chatee = null;
+      stateMap.is_connected = false;
+
+      if (sio) {
+        sio.emit('leavechat');
+      }
+    };
+
+    get_chatee = function () {
+      return chatee;
+    };
+
+    join_chat = function () {
+      var sio;
+
+      if (stateMap.is_connected) {
+        return false;
+      }
+
+      if (stateMap.user.get_is_anonymous()) {
+        console.warn('User must be defined before joining the chat.');
+        return false;
+      }
+
+      sio = (isFakeData) ? app.fake.mockSocketIo : app.data.getSocketIo();
+      sio.on('listchange', _publish_listchange);
+      sio.on('updatechat', _publish_updatechat);
+      stateMap.is_connected = true;
+      return true;
+    };
+
+    send_msg = function (msg_text) {
+      var msg_map,
+          sio = (isFakeData) ? app.fake.mockSocketIo : app.data.getSocketIo();
+
+      if (!sio) {
+        return false;
+      }
+
+      if (!(stateMap.user && chatee)) {
+        return false;
+      }
+
+      msg_map = {
+        dest_id   : chatee.id,
+        dest_name : chatee.name,
+        sender_id : stateMap.user.id,
+        msg_text  : msg_text
+      };
+
+      _publish_updatechat([msg_map]);
+      sio.emit('updatechat', msg_map);
+      return true;
+    };
+
+    set_chatee = function (person_id) {
+      var new_chatee;
+      new_chatee = stateMap.people_cid_map[person_id];
+      if (new_chatee) {
+        if (chatee && chatee.id === new_chatee.id) {
+          return false;
+        }
+      } else {
+        new_chatee = null;
+      }
+
+      $.gevent.publish('app-setchatee', {
+        old_chatee : chatee,
+        new_chatee : new_chatee
+      });
+
+      chatee = new_chatee;
+      return true;
+    };
+
+    update_avatar = function (avatar_update_map) {
+      var sio = (isFakeData) ? app.fake.mockSocketIo : app.data.getSocketIo();
+      if (sio) {
+        sio.emit('updateavatar', avatar_update_map);
+      }
+    };
+
+    return {
+      _leave        : _leave_chat,
+      get_chatee    : get_chatee,
+      join          : join_chat,
+      send_msg      : send_msg,
+      set_chatee    : set_chatee,
+      update_avatar : update_avatar
+    };
+  }());
+
   initModule = function () {
-    var i, people_list, person_map;
 
     stateMap.anonymous_user = makePerson({
       cid  : configMap.anonymous_id,
@@ -14120,23 +14344,11 @@ app.model = (function () {
     });
 
     stateMap.user = stateMap.anonymous_user;
-
-    if (isFakeData) {
-      people_list = app.fake.getPeopleList();
-      for (i = 0; i < people_list.length; i++) {
-        person_map = people_list[i];
-        makePerson({
-          cid     : person_map._id,
-          css_map : person_map.css_map,
-          id      : person_map._id,
-          name    : person_map.name
-        });
-      }
-    }
   };
 
   return {
     initModule : initModule,
+    chat       : chat,
     people     : people
   };
 }());
@@ -14406,6 +14618,13 @@ app.shell = (function () {
 
     app.chat.initModule(jQueryMap.$container);
 
+    app.avatar.configModule({
+      chat_model   : app.model.chat,
+      people_model : app.model.people
+    });
+
+    app.avatar.initModule(jQueryMap.$nav);
+
     $(window)
       .bind('resize', onResize)
       .bind('hashchange', onHashChange)
@@ -14429,8 +14648,10 @@ app.shell = (function () {
  regexp : true,  sloppy : true,     vars : false,
  white  : true
  */
-/*global $, app, getComputedStyle */
+/*global $, app */
 app.chat = (function () {
+  'use strict';
+
   var configMap = {
         main_html : String()
           + '<div class="app-chat">'
@@ -14442,10 +14663,20 @@ app.chat = (function () {
             + '</div>'
             + '<div class="app-chat-closer">x</div>'
             + '<div class="app-chat-sizer">'
-              + '<div class="app-chat-messages"></div>'
-              + '<div class="app-chat-box">'
-                + '<input type="text"/>'
-                + '<div>Send</div>'
+              + '<div class="app-chat-list">'
+                + '<div class="app-chat-list-box"></div>'
+              + '</div>'
+              + '<div class="app-chat-messages">'
+                + '<div class="app-chat-messages-log"></div>'
+                + '<div class="app-chat-messages-in">'
+                  + '<form class="app-chat-messages-form">'
+                    + '<input type="text"/>'
+                    + '<input type="submit" style="display: none;"/>'
+                    + '<div class="app-chat-messages-send">'
+                      + 'Send'
+                    + '</div>'
+                  + '</form>'
+                + '</div>'
               + '</div>'
             + '</div>'
           + '</div>',
@@ -14468,8 +14699,8 @@ app.chat = (function () {
         slider_closed_em     : 2,
         slider_opened_min_em : 10,
         window_height_min_em : 20,
-        slider_opened_title  : 'Click to close',
-        slider_closed_title  : 'Click to open',
+        slider_opened_title  : 'Tap to Close',
+        slider_closed_title  : 'Tap to Open',
 
         chat_model   : null,
         people_model : null,
@@ -14485,8 +14716,10 @@ app.chat = (function () {
         slider_opened_px : 0
       },
       jQueryMap = {},
-      setjQueryMap, getEmSize, setPxSizes, setSliderPosition,
-      onClickToggle, configModule, initModule, removeSlider, handleResize;
+      setjQueryMap, setPxSizes, scrollChat, writeChat, writeAlert,
+      clearChat, setSliderPosition, onTapToggle, onSubmitMsg, onTapList,
+      onSetchatee, onUpdatechat, onListchange, onLogin, onLogout,
+      configModule, initModule, removeSlider, handleResize;
 
   setjQueryMap = function () {
     var $append_target = stateMap.$append_target,
@@ -14497,23 +14730,21 @@ app.chat = (function () {
       $toggle   : $slider.find('.app-chat-header-toggle'),
       $title    : $slider.find('.app-chat-header-title'),
       $sizer    : $slider.find('.app-chat-sizer'),
-      $messages : $slider.find('.app-chat-messages'),
-      $box      : $slider.find('.app-chat-box'),
-      $input    : $slider.find('.app-chat-box input[type=text]')
+      $list_box : $slider.find('.app-chat-list-box'),
+      $msg_log  : $slider.find('.app-chat-messages-log'),
+      $msg_in   : $slider.find('.app-chat-messages-in'),
+      $input    : $slider.find('.app-chat-messages-in input[type=text]'),
+      $send     : $slider.find('.app-chat-messages-send'),
+      $form     : $slider.find('.app-chat-messages-form'),
+      $window   : $(window)
     };
-  };
-
-  getEmSize = function (element) {
-    return Number(
-      getComputedStyle(element, '').fontSize.match(/\d*\.?\d*/)[0]
-    );
   };
 
   setPxSizes = function () {
     var px_per_em, window_height_em, opened_height_em;
-    px_per_em = getEmSize(jQueryMap.$slider.get(0));
+    px_per_em = app.util_browser.getEmSize(jQueryMap.$slider.get(0));
     window_height_em = Math.floor(
-      ($(window).height() / px_per_em) + 0.5
+      (jQueryMap.$window.height() / px_per_em) + 0.5
     );
     opened_height_em =
       (window_height_em > configMap.window_height_min_em) ?
@@ -14531,7 +14762,15 @@ app.chat = (function () {
   setSliderPosition = function (position_type, callback) {
     var height_px, animate_time, slider_title, toggle_text;
 
+    if (position_type === 'opened' &&
+        configMap.people_model.get_user().get_is_anonymous()) {
+      return false;
+    }
+
     if (stateMap.position_type === position_type) {
+      if (position_type === 'opened') {
+        jQueryMap.$input.focus();
+      }
       return true;
     }
 
@@ -14541,6 +14780,7 @@ app.chat = (function () {
         animate_time = configMap.slider_open_time;
         slider_title = configMap.slider_closed_title;
         toggle_text  = '=';
+        jQueryMap.$input.focus();
         break;
       case 'hidden' :
         height_px    = 0;
@@ -14574,7 +14814,42 @@ app.chat = (function () {
     return true;
   };
 
-  onClickToggle = function () {
+  scrollChat = function () {
+    var $msg_log = jQueryMap.$msg_log;
+    $msg_log.animate({
+      scrollTop : $msg_log.prop('scrollHeight') - $msg_log.height()
+    }, 150);
+  };
+
+  writeChat = function (person_name, text, is_user) {
+    var msg_class = (is_user) ?
+      'app-chat-messages-log-me' :
+      'app-chat-messages-log-message';
+
+    jQueryMap.$msg_log.append(
+      '<div class="' + msg_class + '">'
+      + app.util_browser.encodeHtml(person_name) + ': '
+      + app.util_browser.encodeHtml(text) + '</div>'
+    );
+
+    scrollChat();
+  };
+
+  writeAlert = function (alert_text) {
+    jQueryMap.$msg_log.append(
+      '<div class="app-chat-messages-log-alert">'
+        + app.util_browser.encodeHtml(alert_text)
+      + '</div>'
+    );
+
+    scrollChat();
+  };
+
+  clearChat = function () {
+    jQueryMap.$msg_log.empty();
+  };
+
+  onTapToggle = function () {
     var set_chat_anchor = configMap.set_chat_anchor;
 
     if (stateMap.position_type === 'opened') {
@@ -14583,6 +14858,140 @@ app.chat = (function () {
       set_chat_anchor('opened');
     }
     return false;
+  };
+
+  onSubmitMsg = function () {
+    var msg_text = jQueryMap.$input.val();
+
+    if (msg_text.trim() === '') {
+      return false;
+    }
+
+    configMap.chat_model.send_msg(msg_text);
+    jQueryMap.$input.focus();
+    jQueryMap.$send.addClass('app-x-select');
+    setTimeout(function () {
+      jQueryMap.$send.removeClass('app-x-select');
+    }, 250);
+
+    return false;
+  };
+
+  onTapList = function (event) {
+    var $tapped = $(event.elem_target), chatee_id;
+
+    if (!$tapped.hasClass('app-chat-list-name')) {
+      return false;
+    }
+
+    chatee_id = $tapped.attr('data-id');
+
+    if (!chatee_id) {
+      return false;
+    }
+
+    configMap.chat_model.set_chatee(chatee_id);
+
+    return false;
+  };
+
+  onSetchatee = function (event, arg_map) {
+    var new_chatee = arg_map.new_chatee,
+        old_chatee = arg_map.old_chatee;
+
+    jQueryMap.$input.focus();
+
+    if (!new_chatee) {
+      if (old_chatee) {
+        writeAlert(old_chatee.name + ' has left the chat.');
+      } else {
+        writeAlert('Your friend has left the chat.');
+      }
+
+      jQueryMap.$title.text('Chat');
+
+      return false;
+    }
+
+    jQueryMap.$list_box
+      .find('.app-chat-list-name')
+      .removeClass('app-x-select')
+      .end()
+      .find('[data-id=' + arg_map.new_chatee.id + ']')
+      .addClass('app-x-select');
+
+    writeAlert('Now chatting with ' + arg_map.new_chatee.name);
+    jQueryMap.$title.text('Chat with ' + arg_map.new_chatee.name);
+    return true;
+  };
+
+  onListchange = function () {
+    var list_html = String(),
+        people_db  = configMap.people_model.get_db(),
+        chatee     = configMap.chat_model.get_chatee();
+
+    people_db().each(function (person, idx) {
+      var select_class = '';
+
+      if (person.get_is_anonymous() || person.get_is_user()) {
+        return true;
+      }
+
+      if (chatee && chatee.id === person.id) {
+        select_class = ' app-x-select';
+      }
+
+      list_html
+        += '<div class="app-chat-list-name'
+        + select_class + '" data-id="' + person.id + '">'
+        + app.util_browser.encodeHtml(person.name) + '</div>';
+    });
+
+    if (!list_html) {
+      list_html = String()
+        + '<div class="app-chat-list-note">'
+          + 'No one is online'
+        + '</div>'
+      clearChat();
+    }
+
+    jQueryMap.$list_box.html(list_html);
+  };
+
+  onUpdatechat = function (event, msg_map) {
+    var is_user,
+        sender_id = msg_map.sender_id,
+        msg_text  = msg_map.msg_text,
+        chatee    = configMap.chat_model.get_chatee() || {},
+        sender    = configMap.people_model.get_by_cid(sender_id);
+
+    if (!sender) {
+      writeAlert(msg_text);
+      return false;
+    }
+
+    is_user = sender.get_is_user();
+
+    if (!(is_user || sender_id === chatee.id)) {
+      configMap.chat_model.set_chatee(sender_id);
+    }
+
+    writeChat(sender.name, msg_text, is_user);
+
+    if (is_user) {
+      jQueryMap.$input.val('');
+      jQueryMap.$input.focus();
+    }
+  };
+
+  onLogin = function (event, login_user) {
+    configMap.set_chat_anchor('opened');
+  };
+
+  onLogout = function (event, logout_user) {
+    configMap.set_chat_anchor('closed');
+    jQueryMap.$title.text('Chat');
+    clearChat();
   };
 
   configModule = function (input_map) {
@@ -14595,16 +15004,27 @@ app.chat = (function () {
   };
 
   initModule = function ($append_target) {
-    $append_target.append(configMap.main_html);
+    var $list_box;
+
     stateMap.$append_target = $append_target;
+    $append_target.append(configMap.main_html);
     setjQueryMap();
     setPxSizes();
 
     jQueryMap.$toggle.prop('title', configMap.slider_closed_title);
-    jQueryMap.$header.click(onClickToggle);
     stateMap.position_type = 'closed';
 
-    return true;
+    $list_box = jQueryMap.$list_box;
+    $.gevent.subscribe($list_box, 'app-listchange', onListchange);
+    $.gevent.subscribe($list_box, 'app-setchatee', onSetchatee);
+    $.gevent.subscribe($list_box, 'app-updatechat', onUpdatechat);
+    $.gevent.subscribe($list_box, 'app-login', onLogin);
+    $.gevent.subscribe($list_box, 'app-logout', onLogout);
+
+    jQueryMap.$header.bind('utap', onTapToggle);
+    jQueryMap.$list_box.bind('utap', onTapList);
+    jQueryMap.$send.bind('utap', onSubmitMsg);
+    jQueryMap.$form.bind('submit', onSubmitMsg);
   };
 
   removeSlider = function () {
@@ -14653,4 +15073,218 @@ app.chat = (function () {
  white  : true
  */
 /*global $, app */
-app.avatar = (function () { return {}; }());
+app.avatar = (function () {
+  'use strict';
+
+  var configMap = {
+        chat_model   : null,
+        people_model : null,
+        settable_map : {
+          chat_model   : true,
+          people_model : true
+        }
+      },
+      stateMap = {
+        drag_map      : null,
+        $drag_target  : null,
+        drag_bg_color : undefined
+      },
+      jQueryMap = {},
+      getRandRgb, setjQueryMap, updateAvatar, onTapNav, onHeldstartNav,
+      onHeldmoveNav, onHeldendNav, onSetchatee, onListchange, onLogout,
+      configModule, initModule;
+
+  getRandRgb = function () {
+    var i, rgb_list = [];
+    for (i = 0; i < 3; i++) {
+      rgb_list.push(Math.floor(Math.random() * 128) + 128);
+    }
+    return 'rgb(' + rgb_list.join(', ') + ')';
+  };
+
+  setjQueryMap = function ($container) {
+    jQueryMap = {
+      $container : $container
+    };
+  };
+
+  updateAvatar = function ($target) {
+    var css_map, person_id;
+
+    css_map = {
+      top                : parseInt($target.css('top'), 10),
+      left               : parseInt($target.css('left'), 10),
+      'background-color' : $target.css('background-color')
+    };
+
+    person_id = $target.attr('data-id');
+
+    configMap.chat_model.update_avatar({
+      person_id : person_id,
+      css_map   : css_map
+    });
+  };
+
+  onTapNav = function (event) {
+    var css_map,
+        $target = $(event.elem_target).closest('.app-avatar-box');
+
+    if ($target.length === 0) {
+      return false;
+    }
+
+    $target.css({
+      'background-color' : getRandRgb()
+    });
+
+    updateAvatar($target);
+  };
+
+  onHeldstartNav = function (event) {
+    var offset_target_map, offset_nav_map,
+        $target = $(event.elem_target).closest('.app-avatar-box');
+
+    if ($target.length === 0) {
+      return false;
+    }
+
+    stateMap.$drag_target = $target;
+    offset_target_map     = $target.offset();
+    offset_nav_map        = jQueryMap.$container.offset();
+
+    offset_target_map.top  -= offset_nav_map.top;
+    offset_target_map.left -= offset_nav_map.left;
+
+    stateMap.drag_map      = offset_target_map;
+    stateMap.drag_bg_color = $target.css('background-color');
+
+    $target
+      .addClass('app-x-is-drag')
+      .css('background-color', '');
+  };
+
+  onHeldmoveNav = function (event) {
+    var drag_map = stateMap.drag_map;
+
+    if (!drag_map) {
+      return false;
+    }
+
+    drag_map.top  += event.px_delta_y;
+    drag_map.left += event.px_delta_x;
+
+    stateMap.$drag_target.css({
+      top  : drag_map.top,
+      left : drag_map.left
+    });
+  };
+
+  onHeldendNav = function (event) {
+    var $drag_target = stateMap.$drag_target;
+
+    if (!$drag_target) {
+      return false;
+    }
+
+    $drag_target
+      .removeClass('app-x-is-drag')
+      .css('background-color', stateMap.drag_bg_color);
+
+    stateMap.drag_bg_color = undefined;
+    stateMap.$drag_target  = null;
+    stateMap.drag_map      = null;
+    updateAvatar($drag_target);
+  };
+
+  onSetchatee = function (event, arg_map) {
+    var $nav       = $(this),
+        new_chatee = arg_map.new_chatee,
+        old_chatee = arg_map.old_chatee;
+
+    if (old_chatee) {
+      $nav
+        .find('.app-avatar-box[data-id=' + old_chatee.cid + ']')
+        .removeClass('app-x-is-chatee');
+    }
+
+    if (new_chatee) {
+      $nav
+        .find('.app-avatar-box[data-id=' + new_chatee.cid + ']')
+        .addClass('app-x-is-chatee');
+    }
+  };
+
+  onListchange = function () {
+    var $nav      = $(this),
+        people_db = configMap.people_model.get_db(),
+        user      = configMap.people_model.get_user(),
+        chatee    = configMap.chat_model.get_chatee || {},
+        $box;
+
+    $nav.empty();
+
+    if (user.get_is_anonymous()) {
+      return false;
+    }
+
+    people_db().each(function (person, idx) {
+      var class_list;
+
+      if (person.get_is_anonymous()) {
+        return true;
+      }
+
+      class_list = ['app-avatar-box'];
+
+      if (person.id === chatee.id) {
+        class_list.push('app-x-is-chatee');
+      }
+
+      if (person.get_is_user()) {
+        class_list.push('app-x-is-user');
+      }
+
+      $box = $('<div/>')
+        .addClass(class_list.join(' '))
+        .css(person.css_map)
+        .attr('data-id', String(person.id))
+        .prop('title', app.util_browser.encodeHtml(person.name))
+        .text(person.name)
+        .appendTo($nav);
+    });
+  };
+
+  onLogout = function () {
+    jQueryMap.$container.empty();
+  };
+
+  configModule = function (input_map) {
+    app.util.setConfigMap({
+      input_map    : input_map,
+      settable_map : configMap.settable_map,
+      config_map   : configMap
+    });
+    return true;
+  };
+
+  initModule = function ($container) {
+    setjQueryMap($container);
+
+    $.gevent.subscribe($container, 'app-setchatee', onSetchatee);
+    $.gevent.subscribe($container, 'app-listchange', onListchange);
+    $.gevent.subscribe($container, 'app-logout', onLogout);
+
+    $container
+      .bind('utap', onTapNav)
+      .bind('uheldstart', onHeldstartNav)
+      .bind('uheldmove', onHeldmoveNav)
+      .bind('uheldend', onHeldendNav);
+
+    return true;
+  };
+
+  return {
+    configModule : configModule,
+    initModule   : initModule
+  };
+}());

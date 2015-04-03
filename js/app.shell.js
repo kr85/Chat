@@ -199,6 +199,13 @@ app.shell = (function () {
 
     app.chat.initModule(jQueryMap.$container);
 
+    app.avatar.configModule({
+      chat_model   : app.model.chat,
+      people_model : app.model.people
+    });
+
+    app.avatar.initModule(jQueryMap.$nav);
+
     $(window)
       .bind('resize', onResize)
       .bind('hashchange', onHashChange)

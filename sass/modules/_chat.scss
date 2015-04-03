@@ -2,7 +2,7 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 25em;
+  width: 32em;
   height: 2em;
   background: #fff;
   border-radius: 0.5em 0 0 0;
@@ -71,54 +71,124 @@
   right: 0;
 }
 
+.app-chat-list {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 10em;
+}
+
 .app-chat-messages {
   position: absolute;
+  top: 0;
+  left: 10em;
+  right: 0;
+  bottom: 0;
+}
+
+.app-chat-messages-log, .app-chat-list-box {
+  position:  absolute;
   top: 1em;
-  left: 1em;
+  overflow-x: hidden;
+}
+
+.app-chat-messages-log {
+  left: 0;
   right: 1em;
   bottom: 4em;
   padding: 0.5em;
   border: thin solid #888;
-  overflow-x: hidden;
   overflow-y: scroll;
 }
 
-.app-chat-box {
+.app-chat-messages-log-message {
+  background: #eee;
+}
+
+.app-chat-messages-log-me {
+  font-weight: 800;
+  color: #484;
+}
+
+.app-chat-messages-log-alert {
+  font-style: italic;
+  background: #a88;
+  color: #fff;
+}
+
+.app-chat-list-box {
+  left: 1em;
+  right: 1em;
+  bottom: 1em;
+  overflow-y: auto;
+  border-width: thin 0 thin thin;
+  border-style: solid;
+  border-color: #888;
+  background-color: #888;
+  color: #ddd;
+  border-radius: 0.5em 0 0 0;
+}
+
+.app-chat-list-name, .app-chat-list-note {
+  width: 100%;
+  padding: 0.1em 0.5em;
+}
+
+.app-chat-list-name {
+  cursor: pointer;
+
+  &:hover {
+    background-color: #aaa;
+    color: #888;
+  }
+}
+
+.app-x-select {
+  background-color: #fff;
+  color: #444;
+}
+
+.app-chat-messages-in {
   position: absolute;
   height: 2em;
-  left: 1em;
+  left: 0;
   right: 1em;
   bottom: 1em;
   border: thin solid #888;
   background: #888;
 
   input[type=text] {
-    float: left;
+    position: absolute;
     width: 75%;
     height: 100%;
-    padding: 0.5em;
+    line-height: 100%;
+    padding: 0 0.5em;
     border: 0;
     background: #ddd;
-    color: #404040;
+    color: #666;
 
     &:focus {
-      background: #fff;
+      background: #ff8;
+      color: #222;
     }
   }
+}
 
-  div {
-    float: left;
-    width: 25%;
-    height: 2em;
-    line-height: 1.9em;
-    text-align: center;
-    color: #fff;
-    font-weight: 800;
-    cursor: pointer;
+.app-chat-messages-send {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 25%;
+  height: 100%;
+  line-height: 1.9em;
+  text-align: center;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
 
-    &:hover {
-      background-color: #444;
-      color: #ff0;
-    }
+  &:hover, .app-x-select {
+    background: #444;
+    color: #ff0;
   }
 }

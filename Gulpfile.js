@@ -40,6 +40,7 @@ gulp.task('css', function () {
 // Scripts
 gulp.task('scripts', function () {
   return gulp.src([
+    'js/socket.io.js',
     'js/lib/taffy.js',
     'js/lib/jquery-1.11.2.js',
     'js/lib/jquery.uriAnchor.js',
