@@ -5,7 +5,7 @@
  white  : true
  */
 /*global $, app */
-var app = (function () {
+window.app = (function () {
   'use strict';
 
   var initModule = function ($container) {

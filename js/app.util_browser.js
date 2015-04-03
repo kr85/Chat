@@ -45,7 +45,7 @@ app.util_browser = (function () {
 
     return input_str.replace(
       regex,
-      function (match, name) {
+      function (match /*, name */) {
         return lookup_map[match] || '';
       }
     );

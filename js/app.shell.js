@@ -22,7 +22,7 @@ app.shell = (function () {
               + '<p>Lorem lorem lorem</p>'
             + '</div>'
             + '<div class="app-shell-header-account"></div>'
-            + '<div class="app-shell-header-search"></div>'
+            //+ '<div class="app-shell-header-search"></div>'
           + '</div>'
           + '<div class="app-shell-main">'
             + '<div class="app-shell-main-nav"></div>'
@@ -157,7 +157,7 @@ app.shell = (function () {
   };
 
   onTapAccount = function () {
-    var account_text, user_name, user = app.model.people.get_user();
+    var /* account_text, */ user_name, user = app.model.people.get_user();
 
     if (user.get_is_anonymous()) {
       user_name = prompt('Please Sign-In');
@@ -174,7 +174,7 @@ app.shell = (function () {
     jQueryMap.$account.text(login_user.name);
   };
 
-  onLogout = function (event, logout_user) {
+  onLogout = function (/* event, logout_user */) {
     jQueryMap.$account.text('Please Sign-In');
   };
 

@@ -62,7 +62,7 @@ app.model = (function () {
         cid     = person_map.cid,
         css_map = person_map.css_map,
         id      = person_map.id,
-        name    = person_map.name
+        name    = person_map.name;
 
     if (cid === undefined || !name) {
       throw  'Client ID and name are required.';

@@ -121,7 +121,7 @@ app.chat = (function () {
         height_px    = 0;
         animate_time = configMap.slider_open_time;
         slider_title = '';
-        toggle_text  = '+'
+        toggle_text  = '+';
         break;
       case 'closed' :
         height_px    = stateMap.slider_closed_px;
