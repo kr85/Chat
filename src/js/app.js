@@ -9,6 +9,7 @@ window.app = (function () {
   'use strict';
 
   var initModule = function ($container) {
+    app.data.initModule();
     app.model.initModule();
     app.shell.initModule($container);
   };

@@ -13802,6 +13802,7 @@ window.app = (function () {
   'use strict';
 
   var initModule = function ($container) {
+    app.data.initModule();
     app.model.initModule();
     app.shell.initModule($container);
   };
@@ -13863,8 +13864,44 @@ app.util = (function () {
  regexp : true,  sloppy : true,     vars : false,
  white  : true
  */
-/*global $, app */
-app.data = (function () { return {}; }());
+/*global $, io, app */
+app.data = (function () {
+  'use strict';
+
+  var stateMap = {
+        sio : null
+      },
+      makeSocketIo, getSocketIo, initModule;
+
+  makeSocketIo = function () {
+    var socket = io.connect('/chat');
+
+    return {
+      emit : function (event_name, data) {
+        socket.emit(event_name, data);
+      },
+      on : function (event_name, callback) {
+        socket.on(event_name, function () {
+          callback(arguments);
+        });
+      }
+    };
+  };
+
+  getSocketIo = function () {
+    if (!stateMap.sio) {
+      stateMap.sio = makeSocketIo();
+    }
+    return stateMap.sio;
+  };
+
+  initModule = function () {};
+
+  return {
+    getSocketIo : getSocketIo,
+    initModule  : initModule
+  };
+}());
 /*jslint        browser : true, continue : true,
  devel  : true,  indent : 2,      maxerr : 50,
  newcap : true,   nomen : true, plusplus : true,
@@ -14042,7 +14079,7 @@ app.model = (function () {
         user           : null,
         is_connected   : false
       },
-      isFakeData = true,
+      isFakeData = false,
       personProto, makeCid, clearPeopleDb, completeLogin,
       makePerson, removePerson, people, chat, initModule;
 
