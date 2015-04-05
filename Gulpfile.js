@@ -20,80 +20,79 @@ var gulp         = require('gulp'),
 
 // Styles
 gulp.task('css', function () {
-  return gulp.src('sass/main.scss')
+  return gulp.src('src/sass/main.scss')
     .pipe(sass({ style : 'expanded' }))
     .pipe(autoprefixer({
       browsers : ['last 40 versions'],
       cascade  : false
     }))
-    .pipe(gulp.dest('assets/css'))
+    .pipe(gulp.dest('public/css'))
     .pipe(concatCss('all.css'))
     .pipe(rename({ suffix : '.min' }))
     .pipe(minifyCss({
       keepBreaks          : false,
       keepSpecialComments : 0
     }))
-    .pipe(gulp.dest('assets/css'))
+    .pipe(gulp.dest('public/css'))
     .pipe(notify({ message : 'CSS task complete.' }));
 });
 
 // Scripts
 gulp.task('scripts', function () {
   return gulp.src([
-    'js/socket.io.js',
-    'js/lib/taffy.js',
-    'js/lib/jquery-1.11.2.js',
-    'js/lib/jquery.uriAnchor.js',
-    'js/lib/jquery.event.gevent.js',
-    'js/lib/jquery.event.ue.js',
-    'js/app.js',
-    'js/app.util.js',
-    'js/app.data.js',
-    'js/app.fake.js',
-    'js/app.model.js',
-    'js/app.util_browser.js',
-    'js/app.shell.js',
-    'js/app.chat.js',
-    'js/app.avatar.js'
+    'src/js/lib/taffy.js',
+    'src/js/lib/jquery-1.11.2.js',
+    'src/js/lib/jquery.uriAnchor.js',
+    'src/js/lib/jquery.event.gevent.js',
+    'src/js/lib/jquery.event.ue.js',
+    'src/js/app.js',
+    'src/js/app.util.js',
+    'src/js/app.data.js',
+    'src/js/app.fake.js',
+    'src/js/app.model.js',
+    'src/js/app.util_browser.js',
+    'src/js/app.shell.js',
+    'src/js/app.chat.js',
+    'src/js/app.avatar.js'
   ])
     .pipe(jshint('.jshintrc'))
     .pipe(jshint.reporter('default'))
     .pipe(concat('all.js'))
-    .pipe(gulp.dest('assets/js'))
+    .pipe(gulp.dest('public/js'))
     .pipe(rename({ suffix : '.min' }))
     .pipe(uglify())
-    .pipe(gulp.dest('assets/js'))
+    .pipe(gulp.dest('public/js'))
     .pipe(notify({ message : 'Scripts task complete.' }));
 });
 
 // Images
 gulp.task('images', function () {
-  return gulp.src('images/**/*')
+  return gulp.src('src/images/**/*')
     .pipe(cache(imagemin({
       optimizationLevel : 3,
       progressive       : true,
       interlaced        : true })))
-    .pipe(gulp.dest('assets/images'))
+    .pipe(gulp.dest('public/images'))
     .pipe(notify({ message : 'Images task complete.' }));
 });
 
 // Clean
 gulp.task('clean', function (callback) {
-  del(['assets/css', 'assets/js', 'assets/images'], callback);
+  del(['public/css', 'public/js', 'public/images'], callback);
 });
 
 // Watch
 gulp.task('watch', function () {
   // Watch .scss files
-  gulp.watch('sass/**/*.scss', ['css']);
+  gulp.watch('src/sass/**/*.scss', ['css']);
   // Watch .js files
-  gulp.watch('js/**/*.js', ['scripts']);
+  gulp.watch('src/js/**/*.js', ['scripts']);
   // Watch image files
-  gulp.watch('images/**/*', ['images']);
+  gulp.watch('src/images/**/*', ['images']);
   // Create LiveReload server
   livereload.listen();
-  // Watch any files in assets/, reload on change
-  gulp.watch(['assets/**']).on('change', livereload.changed);
+  // Watch any files in public/, reload on change
+  gulp.watch(['public/**']).on('change', livereload.changed);
 });
 
 // Default task
