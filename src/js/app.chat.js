@@ -307,7 +307,7 @@ app.chat = (function () {
       list_html = String()
         + '<div class="app-chat-list-note">'
           + 'No one is online'
-        + '</div>'
+        + '</div>';
       clearChat();
     }
 
@@ -372,10 +372,10 @@ app.chat = (function () {
 
     $list_box = jQueryMap.$list_box;
     $.gevent.subscribe($list_box, 'app-listchange', onListchange);
-    $.gevent.subscribe($list_box, 'app-setchatee', onSetchatee);
+    $.gevent.subscribe($list_box, 'app-setchatee',  onSetchatee);
     $.gevent.subscribe($list_box, 'app-updatechat', onUpdatechat);
-    $.gevent.subscribe($list_box, 'app-login', onLogin);
-    $.gevent.subscribe($list_box, 'app-logout', onLogout);
+    $.gevent.subscribe($list_box, 'app-login',      onLogin);
+    $.gevent.subscribe($list_box, 'app-logout',     onLogout);
 
     jQueryMap.$header.bind('utap', onTapToggle);
     jQueryMap.$list_box.bind('utap', onTapList);

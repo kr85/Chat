@@ -216,7 +216,7 @@ app.shell = (function () {
       .bind('hashchange', onHashChange)
       .trigger('hashchange');
 
-    $.gevent.subscribe($container, 'app-login', onLogin);
+    $.gevent.subscribe($container, 'app-login',  onLogin);
     $.gevent.subscribe($container, 'app-logout', onLogout);
 
     jQueryMap.$account

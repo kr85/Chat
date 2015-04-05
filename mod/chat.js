@@ -75,14 +75,9 @@ chatObj = {
               delete user_map.cid;
 
               if (result_list.length > 0) {
-                if (!chatterMap[result_map._id]) {
-                  result_map     = result_list[0];
-                  result_map.cid = cid;
-                  signIn(io, result_map, socket);
-                } else {
-                  console.log('Same user name.');
-                  console.log(chatterMap[result_map._id]);
-                }
+                result_map     = result_list[0];
+                result_map.cid = cid;
+                signIn(io, result_map, socket);
               } else {
                 user_map.is_online = true;
                 crud.construct(

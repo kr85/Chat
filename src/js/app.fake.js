@@ -18,7 +18,7 @@ app.fake = (function () {
 
   peopleList = [
       {
-        name : 'Clark',
+        name : 'Chloe',
         _id  : 'id_01',
         css_map : {
           top : 20,
@@ -69,7 +69,7 @@ app.fake = (function () {
       if (msg_type === 'adduser' && callback_map.userupdate) {
         setTimeout(function () {
           person_map = {
-            _id     : data.cid,
+            _id     : makeFakeId(),
             name    : data.name,
             css_map : data.css_map
           };
@@ -82,7 +82,7 @@ app.fake = (function () {
         setTimeout(function () {
           var user = app.model.people.get_user();
           callback_map.updatechat([{
-            dest_id : user.id,
+            dest_id   : user.id,
             dest_name : user.name,
             sender_id : data.dest_id,
             msg_text : 'How\'s it going, ' + user.name + '?'
@@ -99,7 +99,9 @@ app.fake = (function () {
           listchange_idto = undefined;
         }
 
-        send_listchange();
+        if (!data) {
+          send_listchange();
+        }
       }
 
       if (msg_type === 'updateavatar' && callback_map.listchange) {

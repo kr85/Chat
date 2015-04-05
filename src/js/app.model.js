@@ -135,10 +135,10 @@ app.model = (function () {
       });
     };
 
-    logout = function () {
+    logout = function (do_not_reset) {
       var user = stateMap.user;
 
-      chat._leave();
+      chat._leave(do_not_reset);
       stateMap.user = stateMap.anonymous_user;
       clearPeopleDb();
 
@@ -218,13 +218,13 @@ app.model = (function () {
       $.gevent.publish('app-updatechat', [msg_map]);
     };
 
-    _leave_chat = function () {
+    _leave_chat = function (do_not_reset) {
       var sio = (isFakeData) ? app.fake.mockSocketIo : app.data.getSocketIo();
       chatee = null;
       stateMap.is_connected = false;
 
       if (sio) {
-        sio.emit('leavechat');
+        sio.emit('leavechat', do_not_reset);
       }
     };
 
@@ -324,7 +324,7 @@ app.model = (function () {
   };
 
   setDataMode = function (arg_str) {
-    isFakeData = (arg_str === 'fake') ? true : false;
+    isFakeData = (arg_str === 'fake');
   };
 
   return {

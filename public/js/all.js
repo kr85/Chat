@@ -13797,14 +13797,16 @@ return jQuery;
  regexp : true,  sloppy : true,     vars : false,
  white  : true
  */
-/*global $, app */
-window.app = (function () {
+/*global $, app:true */
+app = (function () {
   'use strict';
 
   var initModule = function ($container) {
     app.data.initModule();
     app.model.initModule();
-    app.shell.initModule($container);
+    if (app.shell && $container) {
+      app.shell.initModule($container);
+    }
   };
 
   return {
@@ -13922,7 +13924,7 @@ app.fake = (function () {
 
   peopleList = [
       {
-        name : 'Bety',
+        name : 'Chloe',
         _id  : 'id_01',
         css_map : {
           top : 20,
@@ -13931,7 +13933,7 @@ app.fake = (function () {
         }
       },
       {
-        name : 'Mike',
+        name : 'Lex',
         _id : 'id_02',
         css_map : {
           top : 60,
@@ -13940,7 +13942,7 @@ app.fake = (function () {
         }
       },
       {
-        name : 'Pebbles',
+        name : 'Lois',
         _id : 'id_03',
         css_map : {
           top : 100,
@@ -13949,7 +13951,7 @@ app.fake = (function () {
         }
       },
       {
-        name : 'Wilma',
+        name : 'Lana',
         _id : 'id_04',
         css_map : {
           top : 140,
@@ -13973,7 +13975,7 @@ app.fake = (function () {
       if (msg_type === 'adduser' && callback_map.userupdate) {
         setTimeout(function () {
           person_map = {
-            _id     : data.cid,
+            _id     : makeFakeId(),
             name    : data.name,
             css_map : data.css_map
           };
@@ -13986,7 +13988,7 @@ app.fake = (function () {
         setTimeout(function () {
           var user = app.model.people.get_user();
           callback_map.updatechat([{
-            dest_id : user.id,
+            dest_id   : user.id,
             dest_name : user.name,
             sender_id : data.dest_id,
             msg_text : 'How\'s it going, ' + user.name + '?'
@@ -14003,7 +14005,9 @@ app.fake = (function () {
           listchange_idto = undefined;
         }
 
-        send_listchange();
+        if (!data) {
+          send_listchange();
+        }
       }
 
       if (msg_type === 'updateavatar' && callback_map.listchange) {
@@ -14026,7 +14030,7 @@ app.fake = (function () {
             dest_id   : user.id,
             dest_name : user.name,
             sender_id : 'id_04',
-            msg_text  : 'Hi there ' + user.name + '! Wilma here.'
+            msg_text  : 'Hi there ' + user.name + '! Lana here.'
           }]);
         } else {
           emit_mock_msg();
@@ -14079,9 +14083,9 @@ app.model = (function () {
         user           : null,
         is_connected   : false
       },
-      isFakeData = false,
+      isFakeData = true,
       personProto, makeCid, clearPeopleDb, completeLogin,
-      makePerson, removePerson, people, chat, initModule;
+      makePerson, removePerson, people, chat, initModule, setDataMode;
 
   personProto = {
     get_is_user : function () {
@@ -14195,10 +14199,10 @@ app.model = (function () {
       });
     };
 
-    logout = function () {
+    logout = function (do_not_reset) {
       var user = stateMap.user;
 
-      chat._leave();
+      chat._leave(do_not_reset);
       stateMap.user = stateMap.anonymous_user;
       clearPeopleDb();
 
@@ -14278,13 +14282,13 @@ app.model = (function () {
       $.gevent.publish('app-updatechat', [msg_map]);
     };
 
-    _leave_chat = function () {
+    _leave_chat = function (do_not_reset) {
       var sio = (isFakeData) ? app.fake.mockSocketIo : app.data.getSocketIo();
       chatee = null;
       stateMap.is_connected = false;
 
       if (sio) {
-        sio.emit('leavechat');
+        sio.emit('leavechat', do_not_reset);
       }
     };
 
@@ -14383,10 +14387,15 @@ app.model = (function () {
     stateMap.user = stateMap.anonymous_user;
   };
 
+  setDataMode = function (arg_str) {
+    isFakeData = (arg_str === 'fake');
+  };
+
   return {
-    initModule : initModule,
-    chat       : chat,
-    people     : people
+    initModule  : initModule,
+    chat        : chat,
+    people      : people,
+    setDataMode : setDataMode
   };
 }());
 /*jslint        browser : true, continue : true,
@@ -14639,6 +14648,11 @@ app.shell = (function () {
   };
 
   initModule = function ($container) {
+    var data_mode_str;
+
+    data_mode_str = (window.location.search === '?fake') ? 'fake' : 'live';
+    app.model.setDataMode(data_mode_str);
+
     stateMap.$container = $container;
     $container.html(configMap.main_html);
     setjQueryMap();
@@ -14667,7 +14681,7 @@ app.shell = (function () {
       .bind('hashchange', onHashChange)
       .trigger('hashchange');
 
-    $.gevent.subscribe($container, 'app-login', onLogin);
+    $.gevent.subscribe($container, 'app-login',  onLogin);
     $.gevent.subscribe($container, 'app-logout', onLogout);
 
     jQueryMap.$account
@@ -14988,7 +15002,7 @@ app.chat = (function () {
       list_html = String()
         + '<div class="app-chat-list-note">'
           + 'No one is online'
-        + '</div>'
+        + '</div>';
       clearChat();
     }
 
@@ -15053,10 +15067,10 @@ app.chat = (function () {
 
     $list_box = jQueryMap.$list_box;
     $.gevent.subscribe($list_box, 'app-listchange', onListchange);
-    $.gevent.subscribe($list_box, 'app-setchatee', onSetchatee);
+    $.gevent.subscribe($list_box, 'app-setchatee',  onSetchatee);
     $.gevent.subscribe($list_box, 'app-updatechat', onUpdatechat);
-    $.gevent.subscribe($list_box, 'app-login', onLogin);
-    $.gevent.subscribe($list_box, 'app-logout', onLogout);
+    $.gevent.subscribe($list_box, 'app-login',      onLogin);
+    $.gevent.subscribe($list_box, 'app-logout',     onLogout);
 
     jQueryMap.$header.bind('utap', onTapToggle);
     jQueryMap.$list_box.bind('utap', onTapList);
