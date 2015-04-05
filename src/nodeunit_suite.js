@@ -8,17 +8,17 @@
 
 // Third-party modules and globals
 global.jQuery = require('jquery');
-global.TAFFY  = require('./js/lib/taffy.js').taffy;
+global.TAFFY  = require('./client/js/lib/taffy.js').taffy;
 global.$      = global.jQuery;
-require('./js/lib/jquery.event.gevent.js');
+require('./client/js/lib/jquery.event.gevent.js');
 
 // App modules and globals
 global.app = null;
-require('./js/app.js');
-require('./js/app.util.js');
-require('./js/app.fake.js');
-require('./js/app.data.js');
-require('./js/app.model.js');
+require('./client/js/app.js');
+require('./client/js/app.util.js');
+require('./client/js/app.fake.js');
+require('./client/js/app.data.js');
+require('./client/js/app.model.js');
 
     // Utility and handlers
 var makePeopleStr, onLogin, onListchange,

@@ -188,7 +188,7 @@ dbHandle.open(function () {
 
   for (schema_name in objTypeMap) {
     if (objTypeMap.hasOwnProperty(schema_name)) {
-      schema_path = __dirname + '/' + schema_name + '.json';
+      schema_path = __dirname + '/validation/' + schema_name + '.json';
       loadSchema(schema_name, schema_path);
     }
   }

@@ -20,7 +20,7 @@ var gulp         = require('gulp'),
 
 // Styles
 gulp.task('css', function () {
-  return gulp.src('src/sass/main.scss')
+  return gulp.src('src/client/sass/main.scss')
     .pipe(sass({ style : 'expanded' }))
     .pipe(autoprefixer({
       browsers : ['last 40 versions'],
@@ -40,20 +40,20 @@ gulp.task('css', function () {
 // Scripts
 gulp.task('scripts', function () {
   return gulp.src([
-    'src/js/lib/taffy.js',
-    'src/js/lib/jquery-1.11.2.js',
-    'src/js/lib/jquery.uriAnchor.js',
-    'src/js/lib/jquery.event.gevent.js',
-    'src/js/lib/jquery.event.ue.js',
-    'src/js/app.js',
-    'src/js/app.util.js',
-    'src/js/app.data.js',
-    'src/js/app.fake.js',
-    'src/js/app.model.js',
-    'src/js/app.util_browser.js',
-    'src/js/app.shell.js',
-    'src/js/app.chat.js',
-    'src/js/app.avatar.js'
+    'src/client/js/lib/taffy.js',
+    'src/client/js/lib/jquery-1.11.2.js',
+    'src/client/js/lib/jquery.uriAnchor.js',
+    'src/client/js/lib/jquery.event.gevent.js',
+    'src/client/js/lib/jquery.event.ue.js',
+    'src/client/js/app.js',
+    'src/client/js/app.util.js',
+    'src/client/js/app.data.js',
+    'src/client/js/app.fake.js',
+    'src/client/js/app.model.js',
+    'src/client/js/app.util_browser.js',
+    'src/client/js/app.shell.js',
+    'src/client/js/app.chat.js',
+    'src/client/js/app.avatar.js'
   ])
     .pipe(jshint('.jshintrc'))
     .pipe(jshint.reporter('default'))
@@ -67,7 +67,7 @@ gulp.task('scripts', function () {
 
 // Images
 gulp.task('images', function () {
-  return gulp.src('src/images/**/*')
+  return gulp.src('src/client/images/**/*')
     .pipe(cache(imagemin({
       optimizationLevel : 3,
       progressive       : true,
@@ -84,11 +84,11 @@ gulp.task('clean', function (callback) {
 // Watch
 gulp.task('watch', function () {
   // Watch .scss files
-  gulp.watch('src/sass/**/*.scss', ['css']);
+  gulp.watch('src/client/sass/**/*.scss', ['css']);
   // Watch .js files
-  gulp.watch('src/js/**/*.js', ['scripts']);
+  gulp.watch('src/client/js/**/*.js', ['scripts']);
   // Watch image files
-  gulp.watch('src/images/**/*', ['images']);
+  gulp.watch('src/client/images/**/*', ['images']);
   // Create LiveReload server
   livereload.listen();
   // Watch any files in public/, reload on change

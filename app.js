@@ -9,7 +9,7 @@
 
 var http    = require('http'),
     express = require('express'),
-    routes  = require('./mod/routes'),
+    routes  = require('./src/server/routes'),
     app     = express(),
     server  = http.createServer(app);
 
