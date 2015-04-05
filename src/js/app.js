@@ -4,14 +4,16 @@
  regexp : true,  sloppy : true,     vars : false,
  white  : true
  */
-/*global $, app */
-window.app = (function () {
+/*global $, app:true */
+app = (function () {
   'use strict';
 
   var initModule = function ($container) {
     app.data.initModule();
     app.model.initModule();
-    app.shell.initModule($container);
+    if (app.shell && $container) {
+      app.shell.initModule($container);
+    }
   };
 
   return {

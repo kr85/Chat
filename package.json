@@ -30,7 +30,7 @@
     "method-override": "^2.3.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "nodeunit ./src/nodeunit_suite.js"
   },
   "repository": {
     "type": "git",
@@ -39,7 +39,11 @@
   "keywords": [
     "Chat module"
   ],
-  "author": "Kosta Rashev",
+  "author": {
+    "name": "Kosta Rashev",
+    "email": "kosta.rashev@gmail.com",
+    "url": "http://www.kostarashev.com"
+  },
   "license": "BSD-2-Clause",
   "bugs": {
     "url": "https://github.com/kr85/Chat-Module/issues"

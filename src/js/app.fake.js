@@ -18,7 +18,7 @@ app.fake = (function () {
 
   peopleList = [
       {
-        name : 'Bety',
+        name : 'Clark',
         _id  : 'id_01',
         css_map : {
           top : 20,
@@ -27,7 +27,7 @@ app.fake = (function () {
         }
       },
       {
-        name : 'Mike',
+        name : 'Lex',
         _id : 'id_02',
         css_map : {
           top : 60,
@@ -36,7 +36,7 @@ app.fake = (function () {
         }
       },
       {
-        name : 'Pebbles',
+        name : 'Lois',
         _id : 'id_03',
         css_map : {
           top : 100,
@@ -45,7 +45,7 @@ app.fake = (function () {
         }
       },
       {
-        name : 'Wilma',
+        name : 'Lana',
         _id : 'id_04',
         css_map : {
           top : 140,
@@ -122,7 +122,7 @@ app.fake = (function () {
             dest_id   : user.id,
             dest_name : user.name,
             sender_id : 'id_04',
-            msg_text  : 'Hi there ' + user.name + '! Wilma here.'
+            msg_text  : 'Hi there ' + user.name + '! Lana here.'
           }]);
         } else {
           emit_mock_msg();

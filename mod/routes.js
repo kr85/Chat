@@ -14,6 +14,19 @@ var configRoutes,
     makeMongoId = crud.makeMongoId;
 
 configRoutes = function (app, server) {
+  var agent_text;
+  agent_text = 'Chat Application';
+
+  app.all('*', function (request, response, next) {
+    if (request.headers['user-agent'] ===
+        'Googlebot/2.1 (+http://www.googlebot.com/bot.html)') {
+      response.contentType('html');
+      response.end(agent_text);
+    } else {
+      next();
+    }
+  });
+
   app.get('/', function (request, response) {
     response.redirect('/index.html');
   });

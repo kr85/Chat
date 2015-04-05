@@ -19,9 +19,9 @@ app.model = (function () {
         user           : null,
         is_connected   : false
       },
-      isFakeData = false,
+      isFakeData = true,
       personProto, makeCid, clearPeopleDb, completeLogin,
-      makePerson, removePerson, people, chat, initModule;
+      makePerson, removePerson, people, chat, initModule, setDataMode;
 
   personProto = {
     get_is_user : function () {
@@ -323,9 +323,14 @@ app.model = (function () {
     stateMap.user = stateMap.anonymous_user;
   };
 
+  setDataMode = function (arg_str) {
+    isFakeData = (arg_str === 'fake') ? true : false;
+  };
+
   return {
-    initModule : initModule,
-    chat       : chat,
-    people     : people
+    initModule  : initModule,
+    chat        : chat,
+    people      : people,
+    setDataMode : setDataMode
   };
 }());
