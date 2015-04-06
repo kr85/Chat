@@ -32,7 +32,8 @@
     "method-override": "^2.3.2"
   },
   "scripts": {
-    "test": "nodeunit ./src/nodeunit_suite.js"
+    "test": "nodeunit ./src/nodeunit_suite.js",
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
