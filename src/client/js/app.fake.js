@@ -5,6 +5,7 @@
  white  : true
  */
 /*global $, app */
+
 app.fake = (function () {
   'use strict';
 
@@ -19,7 +20,7 @@ app.fake = (function () {
   peopleList = [
       {
         name : 'Chloe',
-        _id  : 'id_01',
+        _id  : 'id_1',
         css_map : {
           top : 20,
           left : 20,
@@ -28,7 +29,7 @@ app.fake = (function () {
       },
       {
         name : 'Lex',
-        _id : 'id_02',
+        _id : 'id_2',
         css_map : {
           top : 60,
           left : 20,
@@ -37,7 +38,7 @@ app.fake = (function () {
       },
       {
         name : 'Lois',
-        _id : 'id_03',
+        _id : 'id_3',
         css_map : {
           top : 100,
           left : 20,
@@ -46,7 +47,7 @@ app.fake = (function () {
       },
       {
         name : 'Lana',
-        _id : 'id_04',
+        _id : 'id_4',
         css_map : {
           top : 140,
           left : 20,
@@ -123,7 +124,7 @@ app.fake = (function () {
           callback_map.updatechat([{
             dest_id   : user.id,
             dest_name : user.name,
-            sender_id : 'id_04',
+            sender_id : 'id_4',
             msg_text  : 'Hi there ' + user.name + '! Lana here.'
           }]);
         } else {

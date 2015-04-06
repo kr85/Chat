@@ -5,6 +5,7 @@
  white  : true
  */
 /*global $, app */
+
 app.util = (function () {
   var makeError, setConfigMap;
 

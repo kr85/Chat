@@ -5,6 +5,7 @@
  white  : true
  */
 /*global TAFFY, $, app */
+
 app.model = (function () {
   'use strict';
 
@@ -21,7 +22,8 @@ app.model = (function () {
       },
       isFakeData = true,
       personProto, makeCid, clearPeopleDb, completeLogin,
-      makePerson, removePerson, people, chat, initModule, setDataMode;
+      makePerson, removePerson, people, chat, initModule,
+      setDataMode;
 
   personProto = {
     get_is_user : function () {
@@ -156,7 +158,9 @@ app.model = (function () {
 
   chat = (function () {
     var _publish_listchange, _publish_updatechat, _update_list, _leave_chat,
+
         get_chatee, join_chat, send_msg, set_chatee, update_avatar,
+
         chatee = null;
 
     _update_list = function (arg_list) {
@@ -166,16 +170,17 @@ app.model = (function () {
 
       clearPeopleDb();
 
+      PERSON:
       for (i = 0; i < people_list.length; i++) {
         person_map = people_list[i];
 
         if (!person_map.name) {
-          continue;
+          continue PERSON;
         }
 
         if (stateMap.user && stateMap.user.id === person_map._id) {
           stateMap.user.css_map = person_map.css_map;
-          continue;
+          continue PERSON;
         }
 
         make_person_map = {
@@ -187,7 +192,7 @@ app.model = (function () {
 
         person = makePerson(make_person_map);
 
-        if (chatee && chatee.id == make_person_map.id) {
+        if (chatee && chatee.id === make_person_map.id) {
           is_chatee_online = true;
           chatee = person;
         }

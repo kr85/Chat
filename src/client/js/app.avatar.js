@@ -5,6 +5,7 @@
  white  : true
  */
 /*global $, app */
+
 app.avatar = (function () {
   'use strict';
 

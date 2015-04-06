@@ -5,12 +5,11 @@
  white  : true
  */
 /*global $, io, app */
+
 app.data = (function () {
   'use strict';
 
-  var stateMap = {
-        sio : null
-      },
+  var stateMap = { sio : null },
       makeSocketIo, getSocketIo, initModule;
 
   makeSocketIo = function () {

@@ -82,7 +82,6 @@ onUpdatechat = function (event, arg) {
 onSetchatee = function (event, arg) {
   chateeEvent = event;
   chateeData  = arg;
-  console.log(chateeData);
   $deferChateeList[chateeIdx].resolve();
   chateeIdx++;
   $deferChateeList[chateeIdx] = $.Deferred();
@@ -201,7 +200,7 @@ testUserAndPeople = function (test) {
   test.ok(people_str === user_str, test_str);
 
   $.when($deferMsgList[0], $deferChateeList[0])
-    .then(test.done());
+    .then(test.done);
 };
 
 testLanaMsg = function (test) {
@@ -246,7 +245,7 @@ sendLexMsg = function (test) {
   test.ok(chatee.name === 'Lex', test_str);
 
   $.when($deferMsgList[1], $deferChateeList[1])
-    .then(test.done());
+    .then(test.done);
 };
 
 testMsgToLex = function (test) {
@@ -261,7 +260,7 @@ testMsgToLex = function (test) {
   test_str = 'Message change is as expected.';
   test.ok(msgData.msg_text === 'Hows it going?', test_str);
 
-  $deferMsgList[2].done(test.done());
+  $deferMsgList[2].done(test.done);
 };
 
 testLexResponse = function (test) {
@@ -276,7 +275,7 @@ testLexResponse = function (test) {
       dest_id   : 'id_5',
       dest_name : 'Clark',
       sender_id : 'id_2',
-      msg_text  : 'Been good, Clark.'
+      msg_text  : 'How\'s it going, Clark?'
     },
     test_str
   );
@@ -298,7 +297,7 @@ updateLexAvatar = function (test) {
     }
   });
 
-  $deferChangeList[1].done(test.done());
+  $deferChangeList[1].done(test.done);
 };
 
 testLexAvatar = function (test) {
@@ -331,7 +330,7 @@ logoutAsClark = function (test) {
   app.model.people.logout(true);
 
   // Proceed to next test after logout is done
-  $deferLogout.done(test.done());
+  $deferLogout.done(test.done);
 };
 
 testLogoutState = function (test) {
@@ -363,12 +362,12 @@ module.exports = {
   testInitialState  : testInitialState,
   loginAsClark      : loginAsClark,
   testUserAndPeople : testUserAndPeople,
-  //testLanaMsg       : testLanaMsg,
-  //sendLexMsg        : sendLexMsg,
-  //testMsgToLex      : testMsgToLex,
-  //testLexResponse   : testLexResponse,
+  testLanaMsg       : testLanaMsg,
+  sendLexMsg        : sendLexMsg,
+  testMsgToLex      : testMsgToLex,
+  testLexResponse   : testLexResponse,
   updateLexAvatar   : updateLexAvatar,
-  //testLexAvatar     : testLexAvatar,
+  testLexAvatar     : testLexAvatar,
   logoutAsClark     : logoutAsClark,
   testLogoutState   : testLogoutState
 };

@@ -5,6 +5,7 @@
  white  : true
  */
 /*global $, app:true */
+
 app = (function () {
   'use strict';
 

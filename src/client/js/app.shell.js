@@ -5,6 +5,7 @@
  white  : true
  */
 /*global $, app */
+
 app.shell = (function () {
   'use strict';
 

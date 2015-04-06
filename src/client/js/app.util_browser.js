@@ -5,6 +5,7 @@
  white  : true
  */
 /*global $, app */
+
 app.util_browser = (function () {
   'use strict';
 
