@@ -13798,6 +13798,7 @@ return jQuery;
  white  : true
  */
 /*global $, app:true */
+
 app = (function () {
   'use strict';
 
@@ -13820,6 +13821,7 @@ app = (function () {
  white  : true
  */
 /*global $, app */
+
 app.util = (function () {
   var makeError, setConfigMap;
 
@@ -13867,12 +13869,11 @@ app.util = (function () {
  white  : true
  */
 /*global $, io, app */
+
 app.data = (function () {
   'use strict';
 
-  var stateMap = {
-        sio : null
-      },
+  var stateMap = { sio : null },
       makeSocketIo, getSocketIo, initModule;
 
   makeSocketIo = function () {
@@ -13911,6 +13912,7 @@ app.data = (function () {
  white  : true
  */
 /*global $, app */
+
 app.fake = (function () {
   'use strict';
 
@@ -13925,7 +13927,7 @@ app.fake = (function () {
   peopleList = [
       {
         name : 'Chloe',
-        _id  : 'id_01',
+        _id  : 'id_1',
         css_map : {
           top : 20,
           left : 20,
@@ -13934,7 +13936,7 @@ app.fake = (function () {
       },
       {
         name : 'Lex',
-        _id : 'id_02',
+        _id : 'id_2',
         css_map : {
           top : 60,
           left : 20,
@@ -13943,7 +13945,7 @@ app.fake = (function () {
       },
       {
         name : 'Lois',
-        _id : 'id_03',
+        _id : 'id_3',
         css_map : {
           top : 100,
           left : 20,
@@ -13952,7 +13954,7 @@ app.fake = (function () {
       },
       {
         name : 'Lana',
-        _id : 'id_04',
+        _id : 'id_4',
         css_map : {
           top : 140,
           left : 20,
@@ -14029,7 +14031,7 @@ app.fake = (function () {
           callback_map.updatechat([{
             dest_id   : user.id,
             dest_name : user.name,
-            sender_id : 'id_04',
+            sender_id : 'id_4',
             msg_text  : 'Hi there ' + user.name + '! Lana here.'
           }]);
         } else {
@@ -14069,6 +14071,7 @@ app.fake = (function () {
  white  : true
  */
 /*global TAFFY, $, app */
+
 app.model = (function () {
   'use strict';
 
@@ -14085,7 +14088,8 @@ app.model = (function () {
       },
       isFakeData = true,
       personProto, makeCid, clearPeopleDb, completeLogin,
-      makePerson, removePerson, people, chat, initModule, setDataMode;
+      makePerson, removePerson, people, chat, initModule,
+      setDataMode;
 
   personProto = {
     get_is_user : function () {
@@ -14220,7 +14224,9 @@ app.model = (function () {
 
   chat = (function () {
     var _publish_listchange, _publish_updatechat, _update_list, _leave_chat,
+
         get_chatee, join_chat, send_msg, set_chatee, update_avatar,
+
         chatee = null;
 
     _update_list = function (arg_list) {
@@ -14230,16 +14236,17 @@ app.model = (function () {
 
       clearPeopleDb();
 
+      PERSON:
       for (i = 0; i < people_list.length; i++) {
         person_map = people_list[i];
 
         if (!person_map.name) {
-          continue;
+          continue PERSON;
         }
 
         if (stateMap.user && stateMap.user.id === person_map._id) {
           stateMap.user.css_map = person_map.css_map;
-          continue;
+          continue PERSON;
         }
 
         make_person_map = {
@@ -14251,7 +14258,7 @@ app.model = (function () {
 
         person = makePerson(make_person_map);
 
-        if (chatee && chatee.id == make_person_map.id) {
+        if (chatee && chatee.id === make_person_map.id) {
           is_chatee_online = true;
           chatee = person;
         }
@@ -14405,6 +14412,7 @@ app.model = (function () {
  white  : true
  */
 /*global $, app */
+
 app.util_browser = (function () {
   'use strict';
 
@@ -14470,6 +14478,7 @@ app.util_browser = (function () {
  white  : true
  */
 /*global $, app */
+
 app.shell = (function () {
   'use strict';
 
@@ -14700,6 +14709,7 @@ app.shell = (function () {
  white  : true
  */
 /*global $, app */
+
 app.chat = (function () {
   'use strict';
 
@@ -15124,6 +15134,7 @@ app.chat = (function () {
  white  : true
  */
 /*global $, app */
+
 app.avatar = (function () {
   'use strict';
 
