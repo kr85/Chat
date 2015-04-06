@@ -10,12 +10,13 @@
 
 var loadSchema, checkSchema, clearIsOnline, checkType,
     constructObj, readObj, updateObj, destroyObj,
-    mongodb  = require('mongodb'),
-    fsHandle = require('fs'),
-    JSV      = require('JSV').JSV,
+    mongodb     = require('mongodb'),
+    fsHandle    = require('fs'),
+    JSV         = require('JSV').JSV,
+    defaultPort = 27017,
     mongoServer = new mongodb.Server(
       'localhost',
-      mongodb.Connection.DEFAULT_PORT
+      defaultPort
     ),
     dbHandle = new mongodb.Db(
       'chat-app',
